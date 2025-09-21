@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>听话小黑板 - AI订阅服务</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #EBEBF0;
+            color: #363638;
+            line-height: 1.6;
+            overflow-x: hidden;
+            padding-bottom: 100px; /* 为固定按钮预留空间 */
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, #35C759 0%, #2EAB4A 100%);
+            padding: 20px 16px 40px;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1" fill="white" opacity="0.15"/><circle cx="80" cy="40" r="1" fill="white" opacity="0.1"/><circle cx="40" cy="80" r="1" fill="white" opacity="0.15"/><circle cx="60" cy="60" r="1" fill="white" opacity="0.08"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.4;
+        }
+
+        .language-switcher {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .lang-btn {
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+            font-weight: 500;
+        }
+
+        .lang-btn.active {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.6);
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .lang-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .app-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .app-subtitle {
+            font-size: 16px;
+            opacity: 0.95;
+            font-weight: 400;
+            position: relative;
+            z-index: 1;
+        }
+
+        .container {
+            padding: 0 16px;
+            max-width: 100%;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 16px;
+            margin: -20px 16px 24px;
+            padding: 24px 20px;
+            box-shadow: 0 2px 16px rgba(54, 54, 56, 0.08);
+            position: relative;
+            z-index: 2;
+            border: 1px solid rgba(235, 235, 240, 0.6);
+        }
+
+        .feature-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #35C759, #2EAB4A);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-right: 16px;
+            box-shadow: 0 3px 12px rgba(53, 199, 89, 0.3);
+        }
+
+        .feature-text {
+            flex: 1;
+        }
+
+        .feature-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #363638;
+            margin-bottom: 4px;
+        }
+
+        .feature-subtitle {
+            font-size: 14px;
+            color: rgba(54, 54, 56, 0.7);
+            font-weight: 400;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-top: 20px;
+        }
+
+        .feature-item {
+            display: flex;
+            margin-bottom: 16px;
+            align-items: flex-start;
+        }
+
+        .feature-bullet {
+            width: 6px;
+            height: 6px;
+            background: #35C759;
+            border-radius: 50%;
+            margin-top: 8px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .feature-content {
+            flex: 1;
+        }
+
+        .feature-item-title {
+            font-weight: 600;
+            color: #363638;
+            margin-bottom: 4px;
+            font-size: 15px;
+        }
+
+        .feature-item-desc {
+            color: rgba(54, 54, 56, 0.8);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* 订阅计划样式 */
+        .plans-section {
+            background: white;
+            border-radius: 16px;
+            margin: 0 16px 24px;
+            padding: 24px 20px;
+            box-shadow: 0 2px 16px rgba(54, 54, 56, 0.08);
+            position: relative;
+            z-index: 2;
+            border: 1px solid rgba(235, 235, 240, 0.6);
+        }
+
+        .plans-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .plans-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #363638;
+            margin-bottom: 8px;
+        }
+
+        .plans-subtitle {
+            font-size: 14px;
+            color: rgba(54, 54, 56, 0.7);
+        }
+
+        .plans-container {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .plan-card {
+            flex: 1;
+            background: rgba(235, 235, 240, 0.3);
+            border: 2px solid rgba(235, 235, 240, 0.8);
+            border-radius: 16px;
+            padding: 20px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .plan-card.selected {
+            border-color: #35C759;
+            background: rgba(53, 199, 89, 0.08);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(53, 199, 89, 0.2);
+        }
+
+        .plan-card.recommended {
+            border-color: #35C759;
+            background: rgba(53, 199, 89, 0.1);
+        }
+
+        .plan-card.recommended::before {
+            content: '推荐';
+            position: absolute;
+            top: -10px;
+            right: 12px;
+            background: #35C759;
+            color: white;
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .plan-type {
+            font-size: 18px;
+            font-weight: 600;
+            color: #363638;
+            margin-bottom: 12px;
+        }
+
+        .plan-price {
+            font-size: 28px;
+            font-weight: 700;
+            color: #363638;
+            margin-bottom: 6px;
+        }
+
+        .plan-original-price {
+            font-size: 14px;
+            color: rgba(54, 54, 56, 0.5);
+            text-decoration: line-through;
+            margin-bottom: 12px;
+        }
+
+        .plan-note {
+            font-size: 13px;
+            color: rgba(54, 54, 56, 0.7);
+            text-align: center;
+            font-style: italic;
+        }
+
+        /* 用户评价样式 */
+        .reviews-section {
+            margin: 32px 16px;
+        }
+
+        .reviews-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #363638;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .review-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 12px rgba(54, 54, 56, 0.06);
+            border: 1px solid rgba(235, 235, 240, 0.8);
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .review-name {
+            font-weight: 600;
+            color: #363638;
+            font-size: 16px;
+        }
+
+        .review-stars {
+            color: #FFB800;
+            font-size: 14px;
+        }
+
+        .review-content {
+            color: rgba(54, 54, 56, 0.8);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* 固定订阅按钮 */
+        .fixed-subscription {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 16px;
+            border-top: 1px solid rgba(235, 235, 240, 0.8);
+            box-shadow: 0 -2px 16px rgba(54, 54, 56, 0.1);
+            z-index: 1000;
+        }
+
+        .subscription-content {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .subscription-desc {
+            font-size: 14px;
+            color: rgba(54, 54, 56, 0.7);
+            margin-bottom: 12px;
+        }
+
+        .subscribe-btn {
+            background: linear-gradient(135deg, #35C759 0%, #2EAB4A 100%);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(53, 199, 89, 0.4);
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .subscribe-btn:hover, .subscribe-btn:active {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(53, 199, 89, 0.6);
+        }
+
+        .content {
+            display: none;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        /* 动画效果 */
+        .feature-card, .review-card, .plans-section {
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 添加微妙的渐变边框效果 */
+        .feature-card::before, .plans-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 16px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(53, 199, 89, 0.2), rgba(235, 235, 240, 0.3));
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            -webkit-mask-composite: xor;
+            pointer-events: none;
+        }
+
+        .green-accent {
+            background: linear-gradient(90deg, #35C759, transparent);
+            height: 2px;
+            width: 40px;
+            margin: 8px auto;
+            border-radius: 1px;
+        }
+
+        /* 触摸优化 */
+        .lang-btn, .subscribe-btn, .plan-card {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .lang-btn:active {
+            transform: scale(0.95);
+        }
+
+        .subscribe-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .plan-card:active {
+            transform: scale(0.97);
+        }
+
+        /* 超小屏幕适配 */
+        @media (max-width: 360px) {
+            .app-title {
+                font-size: 28px;
+            }
+            
+            .feature-card, .reviews-section, .plans-section {
+                margin-left: 12px;
+                margin-right: 12px;
+            }
+            
+            .feature-card, .plans-section {
+                padding: 20px 16px;
+            }
+            
+            .container {
+                padding: 0 12px;
+            }
+            
+            .plans-container {
+                gap: 12px;
+            }
+            
+            .plan-card {
+                padding: 16px 12px;
+            }
+            
+            .plan-price {
+                font-size: 24px;
+            }
+        }
+
+        /* 大屏幕适配 */
+        @media (min-width: 768px) {
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+            }
+            
+            .feature-card, .reviews-section, .plans-section {
+                margin-left: auto;
+                margin-right: auto;
+                max-width: 600px;
+            }
+            
+            .feature-card, .plans-section {
+                margin-top: -20px;
+                margin-bottom: 24px;
+            }
+        }
+
+        /* 暗色模式优化 */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: #1C1C1E;
+                color: #EBEBF0;
+            }
+            
+            .feature-card, .review-card, .plan-card, .plans-section {
+                background: #2C2C2E;
+                color: #EBEBF0;
+                border-color: #363638;
+            }
+            
+            .plan-card {
+                background: rgba(44, 44, 46, 0.8);
+            }
+            
+            .plan-card.selected, .plan-card.recommended {
+                background: rgba(53, 199, 89, 0.15);
+            }
+            
+            .feature-title, .review-name, .plan-type, .plan-price, .plans-title {
+                color: #EBEBF0;
+            }
+            
+            .feature-subtitle, .plans-subtitle {
+                color: rgba(235, 235, 240, 0.7);
+            }
+            
+            .feature-item-title {
+                color: #EBEBF0;
+            }
+            
+            .feature-item-desc, .review-content {
+                color: rgba(235, 235, 240, 0.8);
+            }
+            
+            .fixed-subscription {
+                background: rgba(44, 44, 46, 0.95);
+                border-top-color: #363638;
+            }
+            
+            .subscription-desc {
+                color: rgba(235, 235, 240, 0.7);
+            }
+        }
+
+        /* 增加一些微交互 */
+        .feature-card:hover, .review-card:hover, .plans-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(54, 54, 56, 0.12);
+        }
+
+        .feature-icon:hover {
+            transform: scale(1.05);
+        }
+
+        .plan-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .plan-card.selected:hover {
+            transform: translateY(-4px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="language-switcher">
+            <button class="lang-btn active" onclick="switchLanguage('zh')">中文</button>
+            <button class="lang-btn" onclick="switchLanguage('en')">English</button>
+            <button class="lang-btn" onclick="switchLanguage('ja')">日本語</button>
+        </div>
+        <div class="app-title">订阅高级版</div>
+        <div class="app-subtitle">AI智能语音识别与翻译，让沟通无障碍</div>
+    </div>
+
+    <!-- 中文内容 -->
+    <div id="content-zh" class="content active">
+        <div class="feature-card">
+            <div class="feature-header">
+                <div class="feature-icon">🎤</div>
+                <div class="feature-text">
+                    <div class="feature-title">AI智能语音识别</div>
+                    <div class="feature-subtitle">让沟通更精准，让交流无障碍</div>
+                </div>
+            </div>
+            <div class="green-accent"></div>
+            <ul class="feature-list">
+                <li class="feature-item">
+                    <div class="feature-bullet"></div>
+                    <div class="feature-content">
+                        <div class="feature-item-title">方言无界限</div>
+                        <div class="feature-item-desc">完美识别中文、粤语、上海话、闽南话、陕西话、四川话等多种方言，让家乡话也能被准确理解</div>
+                    </div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-bullet"></div>
+                    <div class="feature-content">
+                        <div class="feature-item-title">AI智能纠错</div>
+                        <div class="feature-item-desc">基于大语言模型的上下文理解，自动修正识别错误，准确率提升90%以上</div>
+                    </div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-bullet"></div>
+                    <div class="feature-content">
+                        <div class="feature-item-title">多语种支持</div>
+                        <div class="feature-item-desc">涵盖英语、日语、韩语等12种外语，满足国际交流需求</div>
+                    </div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-bullet"></div>
+                    <div class="feature-content">
+                        <div class="feature-item-title">实时显示</div>
+                        <div class="feature-item-desc">语音转文字瞬间完成，大字体清晰展示，听障朋友也能轻松参与对话</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-header">
+                <div class="feature-icon">🌍</div>
+                <div class="feature-text">
+                    <div class="feature-title">AI智能翻译</div>
+                    <div class="feature-subtitle">36种语言任意互译，世界沟通零障碍</div>
+                </div>
+            </div>
+            <div class="green-accent"></div>
+            <ul class="feature-list">
+                <li class="feature-item">
+                    <div class="feature-bullet"></div>
+                    <div class="feature-content">
+                        <div class="feature-item-title">全球通用</div>
+                        <div class="feature-item-desc">支持中、英、日、韩、法、德、西、葡等36种主流语言</div>
+                    </div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-bullet"></div>
+                    <div class="feature-content">
+                        <div class="feature-item-title">精准翻译</div>
+                        <div class="feature-item-desc">AI深度理解语境，翻译更自然、更地道</div>
+                    </div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-bullet"></div>
+                    <div class="feature-content">
+                        <div class="feature-item-title">即时对话</div>
+                        <div class="feature-item-desc">面对面交流实时翻译，让语言不再是沟通的障碍</div>
+                    </div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-bullet"></div>
+                    <div class="feature-content">
+                        <div class="feature-item-title">文化适配</div>
+                        <div class="feature-item-desc">考虑文化差异，提供最贴合本土表达的翻译结果</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- 订阅计划区域 -->
+        <div class="plans-section">
+            <div class="plans-header">
+                <div class="plans-title" id="plans-title">选择你的计划</div>
+                <div class="plans-subtitle" id="plans-subtitle">灵活订阅，随时取消</div>
+            </div>
+            <div class="green-accent"></div>
+            
+            <div class="plans-container">
+                <div class="plan-card recommended selected" data-plan="monthly">
+                    <div class="plan-type" id="plan-monthly-title">月度</div>
+                    <div class="plan-price" id="plan-monthly-price">¥19.9</div>
+                    <div class="plan-original-price" id="plan-monthly-original">¥25</div>
+                </div>
+                <div class="plan-card" data-plan="yearly">
+                    <div class="plan-type" id="plan-yearly-title">年度</div>
+                    <div class="plan-price" id="plan-yearly-price">¥199</div>
+                    <div class="plan-original-price" id="plan-yearly-original">¥300</div>
+                </div>
+            </div>
+            
+            <div class="plan-note" id="plan-note">月度订阅更灵活</div>
+        </div>
+
+        <!-- 用户评价区域 -->
+        <div class="reviews-section">
+            <div class="reviews-title">来自用户们的肯定</div>
+            
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-name">青甜~</div>
+                    <div class="review-stars">⭐⭐⭐⭐⭐</div>
+                </div>
+                <div class="review-content">
+                    家有听障亲人，交流难，幸有听话小黑板App，盼更多暖心产品。作为聋人家属，过去与家人交流，常因沟通不畅而焦急无奈，这种无力感如影随形。直到遇见听话小黑板，这一切有了改变。有一次家庭聚会，大家团坐聊天，以往家人只能默默在一旁，这次借助这款App，家人顺利地参与进来，欢声笑语回荡，温馨满溢。那一刻，我无比感激。
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-name">匀匀AI</div>
+                    <div class="review-stars">⭐⭐⭐⭐⭐</div>
+                </div>
+                <div class="review-content">
+                    非常好的产品，作者太有情怀了。家里老人年纪大了，耳朵听不见，这款产品可以解决面对面沟通的问题。希望作者可以出订阅收费，增加一个视频通话转文字的，让软件可以在浮窗运行。
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-name">kdmnynfmvn</div>
+                    <div class="review-stars">⭐⭐⭐⭐⭐</div>
+                </div>
+                <div class="review-content">
+                    太好了。真的很好耶😄，那天我嗓子哑了，就用的这个。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 英文内容 -->
+    <div id="content-en" class="content">
+        <div class="feature-card">
+            <div class="feature-header">
+                <div class="feature-icon">🎤</div>
+                <div class="feature-text">
+                    <div class="feature-title">AI-Powered Speech Recognition</div>
+                    <div class="feature-subtitle">Understanding Every Accent, Every Dialect</div>
+                </div>
+            </div>
+            <div class="green-accent"></div>
+            <ul class="feature-list">
+                <li class="feature-item">
+                    <div class="feature-bullet"></div>
+                    <div class="feature-content">
+                        <div class="feature-item-title">Dialect Mastery</div>
+                        <div class="feature-item-desc">Accurately recognizes all English variants - from British RP to American Southern, Australian to Irish accents, and regional dialects worldwide</div>
+                    </div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-bullet"></div>
+                    <div class="feature-content">
+                        <div class="feature-item-title">AI Smart Correction</div>
+                        <div class="feature-item-desc">Advanced language models provide context-aware error correction, boosting accuracy by over 90% even with heavy accents</div>
+                    </div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-bullet"></div>
+                    <div class="feature-content">
+                        <div class="feature-item-title">Real-time Display</div>
+                        <div class="feature-item-desc">Instant speech-to-text conversion with large, clear fonts perfect for hearing-impaired users and noisy environments</div>
+                    </div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-bullet"></div>
+                    <div class="feature-content">
+                        <div class="feature-item-title">Professional Quality</div>
+                        <div class="feature-item-desc">Enterprise-grade recognition technology that understands natural speech patterns, slang, and colloquialisms</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-header">
+                <div class="feature-icon">🌍</div>
+                <div class="feature-text">
+                    <div class="feature-title">AI Smart Translation</div>
+                    <div class="feature-subtitle">36 Languages, Infinite Possibilities</div>
+                </div>
+            </div>
+            <div class="green-accent"></div>
+            <ul class="feature-list">
+                <li class="feature-item">
+                    <div class="feature-bullet"></div>
+                    <div class="feature-content">
+                        <div class="feature-item-title">Universal Communication</div>
+                        <div class="feature-item-desc">Connect with people worldwide through support for 36 major languages including English, Chinese, Japanese, Spanish, Arabic, and more</div>
+                    </div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-bullet"></div>
+                    <div class="feature-content">
+                        <div class="feature-item-title">Context-Aware Translation</div>
+                        <div class="feature-item-desc">AI understands nuances and cultural context for natural, authentic translations</div>
+                    </div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-bullet"></div>
+                    <div class="feature-content">
+                        <div class="feature-item-title">Instant Dialogue</div>
+                        <div class="feature-item-desc">Real-time face-to-face translation breaks down language barriers immediately</div>
+                    </div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-bullet"></div>
+                    <div class="feature-content">
+                        <div class="feature-item-title">Cultural Intelligence</div>
+                        <div class="feature-item-desc">Translations adapted to local customs and expressions for truly effective communication</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- 订阅计划区域 -->
+        <div class="plans-section">
+            <div class="plans-header">
+                <div class="plans-title">Choose Your Plan</div>
+                <div class="plans-subtitle">Flexible subscription, cancel anytime</div>
+            </div>
+            <div class="green-accent"></div>
+            
+            <div class="plans-container">
+                <div class="plan-card recommended selected" data-plan="monthly">
+                    <div class="plan-type">Monthly</div>
+                    <div class="plan-price">$2.99</div>
+                    <div class="plan-original-price">$3.99</div>
+                </div>
+                <div class="plan-card" data-plan="yearly">
+                    <div class="plan-type">Annual</div>
+                    <div class="plan-price">$29.99</div>
+                    <div class="plan-original-price">$47.88</div>
+                </div>
+            </div>
+            
+            <div class="plan-note">Monthly subscription is more flexible</div>
+        </div>
+
+        <!-- 用户评价区域 -->
+        <div class="reviews-section">
+            <div class="reviews-title">What Our Users Say</div>
+            
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-name">Sarah M.</div>
+                    <div class="review-stars">⭐⭐⭐⭐⭐</div>
+                </div>
+                <div class="review-content">
+                    This app has been a game-changer for communicating with my hearing-impaired grandmother. The accuracy is incredible, and it's so easy to use. Family gatherings are much more inclusive now!
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-name">Alex Chen</div>
+                    <div class="review-stars">⭐⭐⭐⭐⭐</div>
+                </div>
+                <div class="review-content">
+                    Excellent product with so much heart behind it. Perfect for face-to-face communication with elderly family members who have hearing difficulties. Would love to see video call transcription features!
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-name">Maria Rodriguez</div>
+                    <div class="review-stars">⭐⭐⭐⭐⭐</div>
+                </div>
+                <div class="review-content">
+                    Amazing! Used it when I lost my voice due to a cold. It saved the day and made communication so much easier.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 日文内容 -->
+    <div id="content-ja" class="content">
+        <div class="feature-card">
+            <div class="feature-header">
+                <div class="feature-icon">🎤</div>
+                <div class="feature-text">
+                    <div class="feature-title">AI音声認識機能</div>
+                    <div class="feature-subtitle">あらゆる方言・なまりを正確に認識</div>
+                </div>
+            </div>
+            <div class="green-accent"></div>
+            <ul class="feature-list">
+                <li class="feature-item">
+                    <div class="feature-bullet"></div>
+                    <div class="feature-content">
+                        <div class="feature-item-title">方言対応力</div>
+                        <div class="feature-item-desc">標準語はもちろん、関西弁、東北弁、九州弁、沖縄方言など、日本全国の方言を高精度で認識</div>
+                    </div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-bullet"></div>
+                    <div class="feature-content">
+                        <div class="feature-item-title">AI文脈理解</div>
+                        <div class="feature-item-desc">大規模言語モデルによる前後の文脈を考慮した自動修正で、なまりの強い発音でも認識精度を90%以上向上</div>
+                    </div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-bullet"></div>
+                    <div class="feature-content">
+                        <div class="feature-item-title">リアルタイム表示</div>
+                        <div class="feature-item-desc">音声を瞬時にテキスト化し、大きな文字で見やすく表示。聴覚障害の方との会話もスムーズに</div>
+                    </div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-bullet"></div>
+                    <div class="feature-content">
+                        <div class="feature-item-title">自然な言葉理解</div>
+                        <div class="feature-item-desc">若者言葉や業界用語、日常会話の省略表現まで正確に理解し、自然な日本語として表示</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-header">
+                <div class="feature-icon">🌍</div>
+                <div class="feature-text">
+                    <div class="feature-title">AI翻訳機能</div>
+                    <div class="feature-subtitle">36言語対応、世界中とつながる翻訳力</div>
+                </div>
+            </div>
+            <div class="green-accent"></div>
+            <ul class="feature-list">
+                <li class="feature-item">
+                    <div class="feature-bullet"></div>
+                    <div class="feature-content">
+                        <div class="feature-item-title">グローバル対応</div>
+                        <div class="feature-item-desc">日本語、英語、中国語、韓国語、アラビア語など36の主要言語をカバー</div>
+                    </div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-bullet"></div>
+                    <div class="feature-content">
+                        <div class="feature-item-title">高品質翻訳</div>
+                        <div class="feature-item-desc">AIが文脈や文化的背景を理解し、自然で正確な翻訳を提供</div>
+                    </div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-bullet"></div>
+                    <div class="feature-content">
+                        <div class="feature-item-title">対面会話対応</div>
+                        <div class="feature-item-desc">リアルタイム翻訳で、言語の壁を越えた直接的なコミュニケーションが可能</div>
+                    </div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-bullet"></div>
+                    <div class="feature-content">
+                        <div class="feature-item-title">文化適応翻訳</div>
+                        <div class="feature-item-desc">各国の文化や習慣を考慮した、より適切な表現での翻訳を実現</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- 订阅计划区域 -->
+        <div class="plans-section">
+            <div class="plans-header">
+                <div class="plans-title">プランを選択</div>
+                <div class="plans-subtitle">柔軟な購読、いつでもキャンセル可能</div>
+            </div>
+            <div class="green-accent"></div>
+            
+            <div class="plans-container">
+                <div class="plan-card recommended selected" data-plan="monthly">
+                    <div class="plan-type">月額</div>
+                    <div class="plan-price">¥480</div>
+                    <div class="plan-original-price">¥600</div>
+                </div>
+                <div class="plan-card" data-plan="yearly">
+                    <div class="plan-type">年額</div>
+                    <div class="plan-price">¥4800</div>
+                    <div class="plan-original-price">¥7200</div>
+                </div>
+            </div>
+            
+            <div class="plan-note">月額プランはより柔軟です</div>
+        </div>
+
+        <!-- 用户评价区域 -->
+        <div class="reviews-section">
+            <div class="reviews-title">ユーザーの声</div>
+            
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-name">田中様</div>
+                    <div class="review-stars">⭐⭐⭐⭐⭐</div>
+                </div>
+                <div class="review-content">
+                    聴覚障害を持つ祖母とのコミュニケーションが格段に改善されました。認識精度が素晴らしく、家族みんなが自然に会話に参加できるようになりました。本当に感謝しています。
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-name">佐藤AI</div>
+                    <div class="review-stars">⭐⭐⭐⭐⭐</div>
+                </div>
+                <div class="review-content">
+                    非常に優れた製品で、開発者の思いやりが感じられます。高齢の両親との対面コミュニケーションに最適です。ビデオ通話での文字起こし機能も期待しています。
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-name">山田花子</div>
+                    <div class="review-stars">⭐⭐⭐⭐⭐</div>
+                </div>
+                <div class="review-content">
+                    風邪で声が出なかった時に大変助かりました。簡単に使えて、とても便利なアプリです。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 固定订阅按钮 -->
+    <div class="fixed-subscription">
+        <div class="subscription-content">
+            <div class="subscription-desc" id="sub-desc">解锁全部AI功能，享受精准识别与翻译体验</div>
+            <button class="subscribe-btn" id="sub-btn">立即订阅</button>
+        </div>
+    </div>
+
+    <script>
+        const translations = {
+            zh: {
+                title: "订阅高级版",
+                subtitle: "AI智能语音识别与翻译，让沟通无障碍",
+                subDesc: "解锁全部AI功能，享受精准识别与翻译体验",
+                subBtn: "立即订阅"
+            },
+            en: {
+                title: "Subscribe Premium",
+                subtitle: "AI-powered speech recognition and translation for barrier-free communication",
+                subDesc: "Access all AI features for precise recognition and translation experience",
+                subBtn: "Subscribe Now"
+            },
+            ja: {
+                title: "プレミアム購読",
+                subtitle: "AI音声認識と翻訳で、コミュニケーションの壁を取り除く",
+                subDesc: "すべてのAI機能を解放し、正確な認識と翻訳体験をお楽しみください",
+                subBtn: "今すぐ購読"
+            }
+        };
+
+        let selectedPlan = 'monthly';
+
+        function switchLanguage(lang) {
+            // 隐藏所有内容
+            document.querySelectorAll('.content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 显示选中语言的内容
+            document.getElementById(`content-${lang}`).classList.add('active');
+            
+            // 更新按钮状态
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 更新文本内容
+            const translation = translations[lang];
+            document.querySelector('.app-title').textContent = translation.title;
+            document.querySelector('.app-subtitle').textContent = translation.subtitle;
+            document.getElementById('sub-desc').textContent = translation.subDesc;
+            document.getElementById('sub-btn').textContent = translation.subBtn;
+            
+            // 更新推荐标签
+            const recommendedCards = document.querySelectorAll('.plan-card.recommended');
+            recommendedCards.forEach(card => {
+                if (lang === 'zh') {
+                    card.style.setProperty('--recommended-text', '"推荐"');
+                } else if (lang === 'en') {
+                    card.style.setProperty('--recommended-text', '"Best"');
+                } else if (lang === 'ja') {
+                    card.style.setProperty('--recommended-text', '"おすすめ"');
+                }
+            });
+            
+            // 更新页面语言属性
+            document.documentElement.lang = lang === 'zh' ? 'zh-CN' : (lang === 'en' ? 'en' : 'ja');
+        }
+
+        // 套餐选择功能
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.plan-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    // 移除同一容器内所有选中状态
+                    const container = this.closest('.plans-container');
+                    container.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+                    // 添加选中状态
+                    this.classList.add('selected');
+                    selectedPlan = this.dataset.plan;
+                });
+            });
+        });
+
+        // 订阅按钮点击事件
+        document.getElementById('sub-btn').addEventListener('click', function() {
+            // 添加点击反馈
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+            
+            // 这里可以添加订阅逻辑
+            alert(`跳转到${selectedPlan === 'monthly' ? '月度' : '年度'}订阅页面...`);
+        });
+
+        // 添加页面加载动画
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.feature-card, .review-card, .plans-section');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+    </script>
+</body>
+</html>
